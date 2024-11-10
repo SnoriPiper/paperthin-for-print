@@ -20,12 +20,39 @@ window.addEventListener('load', function() {
     // Get all passage elements
     const passages = Array.from(storyData.querySelectorAll('tw-passagedata'));
     
-    // Sort passages by name
-    passages.sort((a, b) => {
+    // Function to handle natural sorting of strings with numbers
+    const naturalSort = (a, b) => {
         const nameA = a.getAttribute('name').toLowerCase();
         const nameB = b.getAttribute('name').toLowerCase();
-        return nameA.localeCompare(nameB);
-    });
+        
+        // Split strings into parts (numbers and non-numbers)
+        const splitIntoNumbersAndText = str => str.split(/(\d+)/).filter(Boolean);
+        const partsA = splitIntoNumbersAndText(nameA);
+        const partsB = splitIntoNumbersAndText(nameB);
+        
+        // Compare each part
+        for(let i = 0; i < Math.min(partsA.length, partsB.length); i++) {
+            const partA = partsA[i];
+            const partB = partsB[i];
+            
+            // If both parts are numbers, compare numerically
+            if(!isNaN(partA) && !isNaN(partB)) {
+                const numA = parseInt(partA);
+                const numB = parseInt(partB);
+                if(numA !== numB) return numA - numB;
+            }
+            // Otherwise compare as strings
+            else {
+                if(partA !== partB) return partA.localeCompare(partB);
+            }
+        }
+        
+        // If all parts match so far, shorter strings come first
+        return partsA.length - partsB.length;
+    };
+    
+    // Sort passages using natural sort
+    passages.sort(naturalSort);
     
     // Remove all passages from DOM
     passages.forEach(p => p.remove());
